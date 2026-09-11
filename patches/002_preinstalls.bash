@@ -78,9 +78,6 @@ install_packages \
 #^ Tools
 install_packages htop curl wget git unzip
 
-#^ Canberra for startup sound
-install_packages libcanberra-gtk3-module libcanberra-gtk-module gnome-session-canberra || echo "Warning: Some Canberra modules not found, moving on..."
-
 #^ LibreOffice
 	#! LICENSE AGREEMENT
 	echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections

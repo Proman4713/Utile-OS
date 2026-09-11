@@ -24,9 +24,8 @@ install_packages() {
 	apt-get install -y "$@"
 }
 
-# Presumably added due to an issue with installing libcanberra
 apt_get_update() {
-	apt-get update || echo "Some repos failed, but we should be still fine..."
+	apt-get update || echo "Some repos failed, but we should be still fine..." # Unsure why this was added
 }
 
 # To avoid any interactive prompts
