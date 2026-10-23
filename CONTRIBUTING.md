@@ -14,23 +14,23 @@
 ## Naming Scheme
 The first thing to understand about this project is when to say 'Utile', 'Utile OS', 'Utile 26' and 'Utile OS 26':
 - **Utile**:
-	- in file and directory names (e.g. `/usr/share/pixmaps/utile-logo.svg`, `/boot/grub/themes/utile/`, `/etc/dconf/db/local.d/zz99_utile_defaults`)
-	- in Debian package names (e.g. `utile-desktop`, `utile-gnome-defaults`, `utile-wallpapers`)
-	- in shorthand IDs (e.g. `ID=utile` in `/etc/os-release`)
+	- in file and directory names (e.g., `/usr/share/pixmaps/utile-logo.svg`, `/boot/grub/themes/utile/`, `/etc/dconf/db/local.d/zz99_utile_defaults`)
+	- in Debian package names (e.g., `utile-desktop`, `utile-gnome-defaults`, `utile-wallpapers`)
+	- in shorthand IDs (e.g., `ID=utile` in `/etc/os-release`)
 	- in marketing or logos
-	- in any Utile app names (e.g. `Utile App Store`)
-	- in internal metadata (e.g. `Utile Artistic` in `/usr/share/gnome-background-properties/abstract-wallpapers.xml`)
+	- in any Utile app names (e.g., `Utile App Store`)
+	- in internal metadata (e.g., `Utile Artistic` in `/usr/share/gnome-background-properties/abstract-wallpapers.xml`)
 	- in casual discussion
 - **Utile OS**:
-	- in user-facing version-agnostic text across the system (e.g. `Install Utile OS`, `Utile OS` in GRUB, `Utile OS` instead of `Ubuntu Desktop` in Settings)
-	- in general OS name declarations (e.g. `NAME="Utile OS"` in `/etc/os-release`)
-	- in formal references (e.g. `Utile OS comes with ABSOLUTELY NO WARRANTY` in `/etc/legal`)
+	- in user-facing version-agnostic text across the system (e.g., `Install Utile OS`, `Utile OS` in GRUB)
+	- in general OS name declarations (e.g., `NAME="Utile OS"` in `/etc/os-release`)
+	- in formal references (e.g., `Utile OS comes with ABSOLUTELY NO WARRANTY` in `/etc/legal`)
 - **Utile 26**:
 	- in public announcements, blog posts, PR mentions, etc.
 	- This should be avoided in most other cases; preferably kept only for casual discussion.
 - **Utile OS 26**:
-	- in user-facing version-specific text (e.g. `Utile OS 26 has experienced an internal error.` and other error messages, `Utile OS 26` in Settings > System > About)
-	- in OS-differentiating locations (e.g. `PRETTY_NAME="Utile OS 26"` in `/etc/os-release`, which is used by neofetch/fastfetch, `Utile OS 26` in the post-install walkthrough dialogue). In other words, places where screenshots are taken.
+	- in user-facing version-specific text (e.g., `Utile OS 26 has experienced an internal error.` and other error messages, `Utile OS 26` in Settings > System > About)
+	- in OS-differentiating locations (e.g., `PRETTY_NAME="Utile OS 26"` in `/etc/os-release`, which is used by neofetch/fastfetch, `Utile OS 26` in the post-install walkthrough dialogue). In other words, places where screenshots are taken.
 
 Apps or services that automatically pick the OS name from `/etc/os-release` or similar files are out of scope.
 
@@ -170,8 +170,19 @@ Pin-Priority: 700
 Although this isn't important to our current topic, this file pins all Utile APT packages from the `upstream` component with a priority of `700` because these packages will conflict with Ubuntu/Debian upstreams; therefore, we need a way to tell APT to choose ours.\
 Anyway, this file is simply hardcoded into Utile OS installations and doesn't require much work. If we ever need to change it, then that would be up to our future upgrade utility.
 
+Another example is `/etc/sysctl.d/20-apparmor.conf` on the live layer only, which contains this:
+```py
+# AppArmor restrictions of unprivileged user namespaces
+
+# Disables AppArmor user namespace restrictions on the live ISO.
+kernel.apparmor_restrict_unprivileged_userns = 0
+kernel.apparmor_restrict_unprivileged_unconfined = 1
+```
+This file is hardcoded with the same content as its equivalent for Ubuntu ISOs. It fixes issues were browsers like Firefox or Brave would refuse to launch in the live environment by disabling certain security features for the live environment only.
+
 #### Systemd
 Changes in enabled/disabled systemd units compared to Ubuntu Desktop. Currently, the only systemd unit whose status we try to enforce is `apparmor`, where we run `systemctl enable apparmor` as a potential solution to Brave's apparmor issues when preinstalled on Utile OS (rather than post-installed).
+##### Note: There are currently no longer any systemd units we try to enforce manually despite new systemd units being added through our Debian packages, since Brave Browser's solution turned out to be the apparmor configuration explained above. Even though `casper` had technically qualified for patch `006_systemd.bash` since it adds an md5check unit, we now configure casper outside of that file due to the layered filesystems.
 
 #### ISO InitRAMFS
 That one, the `initrd` file in the `casper/` directory&hellip; It's there so that the GRUB bootloader on the ISO uses it and the kernel (`vmlinuz`) to start *a* Linux system, very bare-bones. The aforementioned Casper hook in that InitRAMFS then looks for the `filesystem.squashfs` (or whatever you configure it to look for) and loads it.
@@ -194,7 +205,7 @@ The `snaps/` directory contains `.snap` files that you can get (alongside a `.as
 
 The `assertions/` directory contains the `.assert` file for each snap, plus three others: `model`, `account-key`, and `account`. Since this seeding happens for Utile OS in an isolated CI/CD environment, I didn't want to depend on `snapd`, so I used the Snapcraft API (`https://api.snapcraft.io/v2/`), which is ***severely*** undocumented. The closest thing to proper documentation I've found is https://api.snapcraft.io/docs/.
 
-Those three assertions follow the `generic` account on Snapcraft, which is what is used for non-Ubuntu Core (i.e., Desktop) in official ISOs.
+Those three assertions follow the `generic` account on Snapcraft, which is what is used for non-Ubuntu Core (i.e., Desktop) official ISOs.
 * The `model` assertion is obtained through the API's `/assertions/model/SERIES/BRAND_ID/MODEL_KEY`, or, in this case, `/assertions/model/16/generic/generic-classic`. `16` is currently a static value without much meaning. Note that an `Accept: 'application/x.ubuntu.assertion'` header is required.
 * The `account-key` assertion is obtained through the `/assertions/account-key/SIGNING_KEY` endpoint; the signing key is whichever line follows the `sign-key-sha3-384:` value in the model assertion.
 * The `account` assertion is obtained through the `/assertions/account/NAME` endpoint, or `/account/generic` in this case. The name is the owner brand specified in the model assertion.
