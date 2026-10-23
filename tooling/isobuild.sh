@@ -199,8 +199,9 @@ export ISO_DIR="/workspace/utile-iso"
 mkdir -p "$ISO_DIR/casper"
 VMLINUZ=$(ls -1 "$MERGED_CHROOT_DIR/boot/vmlinuz-"* | tail -n 1)
 INITRD=$(ls -1 "$MERGED_CHROOT_DIR/boot/initrd.img-"* | tail -n 1)
-cp "$VMLINUZ" "$ISO_DIR/casper/vmlinuz"
-cp "$INITRD" "$ISO_DIR/casper/initrd"
+# We don't use `cp` for reasons explained in LP #2150431
+install -m 0644 "$VMLINUZ" "$ISO_DIR/casper/vmlinuz"
+install -m 0644 "$INITRD" "$ISO_DIR/casper/initrd"
 
 wrapup_chroot "$MERGED_CHROOT_DIR"
 
