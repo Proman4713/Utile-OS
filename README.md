@@ -77,6 +77,7 @@ Before starting this project, I detailed a specific plan in [an older readme](./
 		<li>Set up build farms through a web app for Utile OS's repositories so that packages don't have to be manually built for every architecture.</li>
 		<li>Streamline feedback and bug reporting even more than Ubuntu Apport does. More on that is described in private notes; it is also related to the App Store (which would be made first).</li>
 		<li>Implement native (and hopefully fancier) equivalents of Ubuntu snap system apps to avoid the over-dependence on the undocumented process of snap preseeding.</li>
+		<li>Related to the idea of build farms, eventually pivot to larger-scale tools for our Debian archive with mirror and phased update support.</li>
 	</ol>
 </details>
 <details>
